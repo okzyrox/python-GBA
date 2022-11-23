@@ -7,6 +7,12 @@ def emu(filepath):
     while True:
         while len(instructions) >= 0:
             for i in instructions:
-                return i
+                try:
+                    getattr(cpu.CPU.inst, f'{i}')
+                    res = True
+                except:
+                    res = False
+                if i != None or res == True:
+                    return i
         
         # do later when less tired

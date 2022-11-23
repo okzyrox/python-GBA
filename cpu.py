@@ -1,4 +1,5 @@
 import mem, main
+import emu
 import cfg
 import random
 
