@@ -22,41 +22,39 @@ from . import *
 kb_constant = 1024 # 1024 bytes == 1kb
 
 # Memory size constraints
-INTERNAL_MEM = 16 * kb_constant
+BIOS_MEM = 16 * kb_constant
 WRAM_1 = 256 * kb_constant
 WRAM_2 = 32 * kb_constant
-IO_MEM = 1023
+IO_REG = 1023
 PALETTE_MEM = 1 * kb_constant
 VRAM_MEM = 96 * kb_constant
 OAM_MEM = 1 * kb_constant
 
 class Memory():
-    def __init__(self):
-        self.mem = []
-        self.totalMem = 32000
-
-    def addMem(self, param, zone):
-        if len(self.mem) == self.mem[zone]:
-            return False
-        else:
-            return self.mem + param
+    def __init__(self, size):
+        self.size = size
+        self.mem = bytearray(size)
 
 class BIOS(Memory):
     def __init__(self):
-        super().__init__()
+        super().__init__(BIOS_MEM)
 
-class Work(Memory): # WRAM On-board && WRAM On-chip
+class Work_OB(Memory): # WRAM On-board
     def __init__(self):
-        super().__init__()
+        super().__init__(WRAM_1)
+
+class Work_OC(Memory): # WRAM On-chip
+    def __init__(self):
+        super().__init__(WRAM_2)
 
 class VRAM(Memory):
     def __init__(self):
-        super().__init__()
+        super().__init__(VRAM_MEM)
 
 class OAM(Memory):
     def __init__(self):
-        super().__init__()
+        super().__init__(OAM_MEM)
 
 class Palette(Memory):
     def __init__(self):
-        super().__init__()
+        super().__init__(PALETTE_MEM)
