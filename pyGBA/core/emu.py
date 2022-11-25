@@ -1,4 +1,4 @@
-import cpu, mem, cfg
+from . import *
 
 instructions = []
 
@@ -14,5 +14,5 @@ def emu(filepath):
                     res = False
                 if i != None or res == True:
                     return i
-        
+
         # do later when less tired
