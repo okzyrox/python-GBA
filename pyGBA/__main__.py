@@ -1,4 +1,6 @@
 from . import *
 
 def main():
-    pass
+    # Setup config folders and ROM folders, etc
+    # Load ROM
+    emu() # Emu

@@ -1,4 +1,6 @@
 from . import *
+import random
+import inspect
 
 #### Memory!!! ####
 ### Memory regions are as follows:
@@ -30,10 +32,40 @@ PALETTE_MEM = 1 * kb_constant
 VRAM_MEM = 96 * kb_constant
 OAM_MEM = 1 * kb_constant
 
+# Memory exceptions
+class MemoryException(Exception):
+    def __init__(self, memory_type, message):
+        self.memory_type = memory_type
+        self.message = str(self.memory_type) + ' failed without a caught exception. Message:\n' + message
+        super().__init__(self.message)
+
+class InvalidMemoryLocation(MemoryException):
+    def __init__(self, address):
+        self.address = address
+        super().__init__(inspect.currentframe().f_back.f_locals['self'], 'Memory address %s (%s) is out of bounds' % (self.address, hex(self.address)))
+
+class RAM():
+    def __init__(self):
+        self.BIOS = BIOS()
+        self.WRAM = (Work_OB(), Work_OC())
+        self.IO = Memory(IO_REG)
+        self.PALETTE = Palette()
+        self.VRAM = VRAM()
+        self.OAM = OAM()
+
 class Memory():
     def __init__(self, size):
         self.size = size
         self.mem = bytearray(size)
+
+    def check_location(self, address):
+        if address < 0 or address > len(self.mem):
+            raise InvalidMemoryLocation(address)
+
+    def randomize(self, start, end):
+        self.check_location(start); self.check_location(end)
+        for n in range(start, end):
+            self.mem[n] = random.getrandbits(1)
 
 class BIOS(Memory):
     def __init__(self):
