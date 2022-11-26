@@ -1,4 +1,4 @@
-from pyGBA.__main__ import main
+from pyGBA.__main__ import main, test
 
 if __name__ == '__main__':
-    main()
+    test()
