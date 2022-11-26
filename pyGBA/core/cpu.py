@@ -1,6 +1,4 @@
-import mem, main
-import emu
-import cfg
+from . import *
 import random
 
 class CPU():
