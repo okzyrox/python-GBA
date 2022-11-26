@@ -1,7 +1,11 @@
 from . import *
 
 def cpuTest():
-    comm = ['MOV', 'MVN']
-    n = cpu.execute(comm)
-    print(n)
-    return n
+    instructions = [
+        'ADD R0, R1, #1 ;',
+    ]
+    cpu = CPU()
+    for i in instructions:
+        n = cpu.execute(i)
+        log(n, 2)
+    return cpu
