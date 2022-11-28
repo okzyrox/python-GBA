@@ -37,6 +37,16 @@ class Op(): # 'new' replacement for op2 / op1 since they need set conditions cod
 
         # self.flag_* = *
 
+        self.opval = None
+
+        self.dest = None
+    
+    def preAddToRegisterArray(self, val):
+        self.register_num = CPU.registers[self.dest]
+        self.registerval = val
+
+        
+
 
 class CPU():
     def __init__(self):
@@ -55,6 +65,10 @@ class CPU():
 
     def int_to_bytes(self, integer):
         return integer.to_bytes(4, byteorder = 'little')
+    
+
+    def addOpReg(self, op:Op): # temp, only for okzyrox testing
+        self.registers[op.dest] = self.int_to_bytes(self.bytes_to_int(op.preAddToRegisterArray.registerval))
 
     ## Logical ALU Operations
     def MOV(self, Rd, Op2, *, cond = None, S = None):
