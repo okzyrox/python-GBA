@@ -1,9 +1,31 @@
 from . import *
 
+
+# old formatting
 # 'S' == Set Condition Codes
 # 'Rn' == 1st Operand Register
 # 'Op2' == 2nd Operand Register
 # 'Rd' == Destination Register
+
+#+++
+# 'DoSetCondCode' - checks whether to set a condition code Condition Codes (0, 1)
+## 0 - 'Do not set condition codes'
+## 1 - 'Set Condition codes'
+
+# 'Op1' - Operand Register 1
+# 'Op2' - Operand Register 2
+# 'RegDest' - Register Destination
+
+#++
+
+# 'Acc' - Accumulate (0, 1)
+## 0 = multiply only
+## 1 = multiply and accumulate
+
+# Unknown
+
+# 'P'
+
 
 # reformat to match actual names or??????
 # https://iitd-plos.github.io/col718/ref/arm-instructionset.pdf
@@ -41,7 +63,10 @@ class Op(): # 'new' replacement for op2 / op1 since they need set conditions cod
 
         self.dest = None
 
-        g = []
+        self.condition_codes_added = []
+        # when adding a condition code, it defines like a 'thing' to tell the CPU about is withou saying specifically
+        # for example, 'PL' tells the CPU that the Operand is either 'positive or zero'.
+        # FF Link: https://iitd-plos.github.io/col718/ref/arm-instructionset.pdf#%5B%7B%22num%22%3A60%2C%22gen%22%3A0%7D%2C%7B%22name%22%3A%22XYZ%22%7D%2Cnull%2C753%2Cnull%5D
     
     def preAddToRegisterArray(self, val):
         self.register_num = CPU.registers[self.dest]
@@ -68,53 +93,77 @@ class CPU():
     def int_to_bytes(self, integer):
         return integer.to_bytes(4, byteorder = 'little')
     
+    def string_to_bytes(self, string:str):
+        return str.encode(string)
+        # default is UTF-8 which should be fine bytes-wise
+    
+    def bytestring_to_string(self, bytestring:bytes):
+        return bytestring.decode()
+    
 
-    def addOpReg(self, op:Op): # temp, only for okzyrox testing
-        self.registers[op.dest] = self.int_to_bytes(self.bytes_to_int(op.preAddToRegisterArray.registerval))
+
+    
+    def setOpCondCodeCheckThenDo(self, Op:list, CC, DSCC):
+        # CC - CondCode
+        # DSCC - DoSetCondCode
+        if len(Op) != 2 or len(Op) != 1:
+            return 0
+        else:
+            if isinstance(DSCC, int):
+                if DSCC != None and CC != None:
+                    for i in Op:
+                        Op[i].set_condition_code = self.string_to_bytes(CC)
+                elif DSCC != None and CC == None:
+                    Op[i].set_condition_code = self.string_to_bytes("PL") # ARM Doc - 4.2 - 'The Condition Field'
+                    # missing flag support atm so we cant do much with some condition codes
+                    ## 'PL' - positive or zero
+
+                    ## check Ln 69
+            else:
+                return 0
+
 
     ## Logical ALU Operations
-    def MOV(self, RegDest, Op2, *, cond = None, SCondCode = None):
+    def MOV(self, RegDest, Op2, *, CondCode = None, DoSetCondCode = None):
         if isinstance(Op2, str):
             self.registers[RegDest] = self.registers[int(Op2[1])]
         else:
             self.registers[RegDest] = self.int_to_bytes(Op2)
 
-    def MVN(self, RegDest, Op2, *, cond = None, SCondCode = None): # Screw Python bitwise NOT
+    def MVN(self, RegDest, Op2, *, CondCode = None, DoSetCondCode = None): # Screw Python bitwise NOT
         self.registers[RegDest] = self.int_to_bytes(~self.register_to_int(Op2) & 0xFFFFFFFF)
 
-    def ORR(self, RegDest, Op1, Op2, *, cond = None, SCondCode = None):
+    def ORR(self, RegDest, Op1, Op2, *, CondCode = None, DoSetCondCode = None):
         self.registers[RegDest] = self.int_to_bytes(self.bytes_to_int(self.registers[Op1]) | self.register_to_int(Op2))
 
-    def EOR(self, RegDest, Op1, Op2, *, cond = None, SCondCode = None):
+    def EOR(self, RegDest, Op1, Op2, *, CondCode = None, DoSetCondCode = None):
         self.registers[RegDest] = self.int_to_bytes(self.bytes_to_int(self.registers[Op1]) ^ self.register_to_int(Op2))
 
-    def AND(self, RegDest, Op1, Op2, *, cond = None, SCondCode = None):
+    def AND(self, RegDest, Op1, Op2, *, CondCode = None, DoSetCondCode = None):
         self.registers[RegDest] = self.int_to_bytes(self.bytes_to_int(self.registers[Op1]) & self.register_to_int(Op2))
 
-    def BIC(self, RegDest, Op1, Op2, *, cond = None, SCondCode = None):
+    def BIC(self, RegDest, Op1, Op2, *, CondCode = None, DoSetCondCode = None):
         self.registers[RegDest] = self.int_to_bytes(self.bytes_to_int(self.registers[Op1]) & (~self.register_to_int(Op2) & 0xFFFFFFFF))
 
-    def TST(self, Op1, Op2, *, cond = None, P = None, SCondCode = None):
-        # new sys???
-        SCondCode = 1
-        Op1 = Op(count=1) # temp, waiting approval + read topmost comment & its PDF + 'Op' class
-        Op2 = Op(count=2) # temp, waiting approval + read topmost comment & its PDF + 'Op' class
+    def TST(self, Op1, Op2, *, CondCode = None, P = None, DoSetCondCode = None):
 
-        # will probably move outside of func to remove redefining it every time
 
-        if isinstance(cond, int):
-            if cond == None:
-                Op1.set_condition_code, Op2.set_condition_code = self.int_to_bytes(1) # set cond code to '1'
-            elif cond != None:
-                Op1.set_condition_code, Op2.set_condition_code = self.int_to_bytes(cond)
-        else:
+        Op1x = Op(count=1) # temp, probably gonna remove soon
+        Op2x = Op(count=2) # temp, probably gonna remove soon
+
+
+
+        ops = [Op1, Op2]
+        try:
+            self.setOpCondCodeCheckThenDo(Op=ops, CC=CondCode, DSCC=DoSetCondCode)
+        except 0:
             return 0
         
         # cant wait for all this code to do absolutely nothing if i went wrong somewhere; more likely since this is stuff
         # that i barely comprehand lol
 
 
-    def TEQ(self, Op1, Op2, *, cond = None, P = None):
+    def TEQ(self, Op1, Op2, *, CondCode = None, P = None):
         pass
 
     ## Arithmetic ALU Operations
