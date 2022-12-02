@@ -16,8 +16,8 @@ class String: # Deprecated, delete this soon
 
         # Put more here pls
 
-        def ADD(cond = '', S = '', Rd = 0, Rn = 0, Oprnd2 = 0):
-            return 'ADD%s%s R%s, R%s, #%s ;' % (cond, S, Rd, Rn, Oprnd2)
+        def ADD(cond = '', SCondCode = '', RegDest = 0, Op1 = 0, Op2 = 0):
+            return 'ADD%s%s R%s, R%s, #%s ;' % (cond, SCondCode, RegDest, Op1, Op2)
 
     class Execution:
         def parse(instruction):
@@ -40,6 +40,8 @@ class Op(): # 'new' replacement for op2 / op1 since they need set conditions cod
         self.opval = None
 
         self.dest = None
+
+        g = []
     
     def preAddToRegisterArray(self, val):
         self.register_num = CPU.registers[self.dest]
@@ -71,40 +73,40 @@ class CPU():
         self.registers[op.dest] = self.int_to_bytes(self.bytes_to_int(op.preAddToRegisterArray.registerval))
 
     ## Logical ALU Operations
-    def MOV(self, Rd, Op2, *, cond = None, S = None):
+    def MOV(self, RegDest, Op2, *, cond = None, SCondCode = None):
         if isinstance(Op2, str):
-            self.registers[Rd] = self.registers[int(Op2[1])]
+            self.registers[RegDest] = self.registers[int(Op2[1])]
         else:
-            self.registers[Rd] = self.int_to_bytes(Op2)
+            self.registers[RegDest] = self.int_to_bytes(Op2)
 
-    def MVN(self, Rd, Op2, *, cond = None, S = None): # Screw Python bitwise NOT
-        self.registers[Rd] = self.int_to_bytes(~self.register_to_int(Op2) & 0xFFFFFFFF)
+    def MVN(self, RegDest, Op2, *, cond = None, SCondCode = None): # Screw Python bitwise NOT
+        self.registers[RegDest] = self.int_to_bytes(~self.register_to_int(Op2) & 0xFFFFFFFF)
 
-    def ORR(self, Rd, Rn, Op2, *, cond = None, S = None):
-        self.registers[Rd] = self.int_to_bytes(self.bytes_to_int(self.registers[Rn]) | self.register_to_int(Op2))
+    def ORR(self, RegDest, Op1, Op2, *, cond = None, SCondCode = None):
+        self.registers[RegDest] = self.int_to_bytes(self.bytes_to_int(self.registers[Op1]) | self.register_to_int(Op2))
 
-    def EOR(self, Rd, Rn, Op2, *, cond = None, S = None):
-        self.registers[Rd] = self.int_to_bytes(self.bytes_to_int(self.registers[Rn]) ^ self.register_to_int(Op2))
+    def EOR(self, RegDest, Op1, Op2, *, cond = None, SCondCode = None):
+        self.registers[RegDest] = self.int_to_bytes(self.bytes_to_int(self.registers[Op1]) ^ self.register_to_int(Op2))
 
-    def AND(self, Rd, Rn, Op2, *, cond = None, S = None):
-        self.registers[Rd] = self.int_to_bytes(self.bytes_to_int(self.registers[Rn]) & self.register_to_int(Op2))
+    def AND(self, RegDest, Op1, Op2, *, cond = None, SCondCode = None):
+        self.registers[RegDest] = self.int_to_bytes(self.bytes_to_int(self.registers[Op1]) & self.register_to_int(Op2))
 
-    def BIC(self, Rd, Rn, Op2, *, cond = None, S = None):
-        self.registers[Rd] = self.int_to_bytes(self.bytes_to_int(self.registers[Rn]) & (~self.register_to_int(Op2) & 0xFFFFFFFF))
+    def BIC(self, RegDest, Op1, Op2, *, cond = None, SCondCode = None):
+        self.registers[RegDest] = self.int_to_bytes(self.bytes_to_int(self.registers[Op1]) & (~self.register_to_int(Op2) & 0xFFFFFFFF))
 
-    def TST(self, Rn, Op2, *, cond = None, P = None, S = None):
+    def TST(self, Op1, Op2, *, cond = None, P = None, SCondCode = None):
         # new sys???
-        S = 1
-        Rn = Op(count=1) # temp, waiting approval + read topmost comment & its PDF + 'Op' class
+        SCondCode = 1
+        Op1 = Op(count=1) # temp, waiting approval + read topmost comment & its PDF + 'Op' class
         Op2 = Op(count=2) # temp, waiting approval + read topmost comment & its PDF + 'Op' class
 
         # will probably move outside of func to remove redefining it every time
 
         if isinstance(cond, int):
             if cond == None:
-                Rn.set_condition_code, Op2.set_condition_code = self.int_to_bytes(1) # set cond code to '1'
+                Op1.set_condition_code, Op2.set_condition_code = self.int_to_bytes(1) # set cond code to '1'
             elif cond != None:
-                Rn.set_condition_code, Op2.set_condition_code = self.int_to_bytes(cond)
+                Op1.set_condition_code, Op2.set_condition_code = self.int_to_bytes(cond)
         else:
             return 0
         
@@ -112,7 +114,7 @@ class CPU():
         # that i barely comprehand lol
 
 
-    def TEQ(self, Rn, Op2, *, cond = None, P = None):
+    def TEQ(self, Op1, Op2, *, cond = None, P = None):
         pass
 
     ## Arithmetic ALU Operations
