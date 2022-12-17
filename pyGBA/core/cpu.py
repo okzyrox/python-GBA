@@ -1,5 +1,5 @@
 from . import *
-
+import time
 
 # old formatting
 # 'S' == Set Condition Codes
@@ -64,7 +64,7 @@ class Op(): # 'new' replacement for op2 / op1 since they need set conditions cod
         self.dest = None
 
         self.condition_codes_added = []
-        # when adding a condition code, it defines like a 'thing' to tell the CPU about is withou saying specifically
+        # when adding a condition code, it defines like a 'thing' to tell the CPU about it without saying specifically
         # for example, 'PL' tells the CPU that the Operand is either 'positive or zero'.
         # FF Link: https://iitd-plos.github.io/col718/ref/arm-instructionset.pdf#%5B%7B%22num%22%3A60%2C%22gen%22%3A0%7D%2C%7B%22name%22%3A%22XYZ%22%7D%2Cnull%2C753%2Cnull%5D
     
@@ -79,6 +79,9 @@ class CPU():
     def __init__(self):
         self.registers = [ bytes(4) for n in range(16) ] # An array of 16 registers
 
+        self.ops = [] # cpu needs to know the ops right?????????????????????????????????????/ i dont know i cant read
+        self.instructions = [] # only for logging/development purposes for now
+
         log('Initialized CPU', 0) # Log CPU
 
     # Utility
@@ -87,15 +90,18 @@ class CPU():
             return self.bytes_to_int(self.registers[int(register[1])])
         return register
 
-    def bytes_to_int(self, bytes):
+    def bytes_to_int(self, bytes:bytes):
         return int.from_bytes(bytes, byteorder = 'little')
 
-    def int_to_bytes(self, integer):
+    def int_to_bytes(self, integer:int):
         return integer.to_bytes(4, byteorder = 'little')
     
     def string_to_bytes(self, string:str):
-        return str.encode(string)
+        return string.encode(encoding='UTF-8')
         # default is UTF-8 which should be fine bytes-wise
+    
+    def bytes_to_string(self, bytes:bytes):
+        return bytes.decode(encoding='UTF-8')
     
     def bytestring_to_string(self, bytestring:bytes):
         return bytestring.decode()
@@ -145,17 +151,24 @@ class CPU():
     def BIC(self, RegDest, Op1, Op2, *, CondCode = None, DoSetCondCode = None):
         self.registers[RegDest] = self.int_to_bytes(self.bytes_to_int(self.registers[Op1]) & (~self.register_to_int(Op2) & 0xFFFFFFFF))
 
-    def TST(self, Op1, Op2, *, CondCode = None, P = None, DoSetCondCode = None):
+    def TST(self, Op1, Op2, *, CondCode = None, P = None, DoSetCondCode = None, TimeFor = 1):
 
 
-        Op1x = Op(count=1) # temp, probably gonna remove soon
-        Op2x = Op(count=2) # temp, probably gonna remove soon
+        #Op1x = Op(count=1) # temp, probably gonna remove soon
+        #Op2x = Op(count=2) # temp, probably gonna remove soon
+
+        #TimeFor -- i think this is needed? i dont know if CPU calls are instant or last a while so we can use this to "emulate" the time
+
+        self.ops.append(Op1, Op2) 
 
 
 
         ops = [Op1, Op2]
         try:
             self.setOpCondCodeCheckThenDo(Op=ops, CC=CondCode, DSCC=DoSetCondCode)
+            time.wait(TimeFor)
+            self.ops.remove(Op1)
+            self.ops.remove(Op2)
         except 0:
             return 0
         
