@@ -82,7 +82,7 @@ class CPU():
         self.ops = [] # cpu needs to know the ops right?????????????????????????????????????/ i dont know i cant read
         self.instructions = [] # only for logging/development purposes for now
 
-        log('Initialized CPU', 0) # Log CPU
+        logger.log('Initialized CPU', 2) # Log CPU
 
     # Utility
     def register_to_int(self, register):

@@ -2,8 +2,8 @@ from . import *
 
 def memTest():
     ram = RAM()
-    log('RAM Randomization Test:', 2)
-    log('IO Memory hashed before randomization: %s' % hash(str(ram.IO.mem)), 2)
+    logger.log('RAM Randomization Test:', 0)
+    logger.log('IO Memory hashed before randomization: %s' % hash(str(ram.IO.mem)), 0)
     ram.IO.randomize(0, len(ram.IO.mem))
-    log('IO Memory hashed after randomization: %s' % hash(str(ram.IO.mem)), 2)
+    logger.log('IO Memory hashed after randomization: %s' % hash(str(ram.IO.mem)), 0)
     return ram
