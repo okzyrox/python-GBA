@@ -1,5 +1,8 @@
 from . import *
-from .tests import *
+import sys
+
+sys.path.append('../')
+from tests import *
 
 def main():
     # Setup config folders and ROM folders, etc
