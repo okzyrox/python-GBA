@@ -52,6 +52,7 @@ class RAM():
         self.PALETTE = Palette()
         self.VRAM = VRAM()
         self.OAM = OAM()
+        logger.log('Allocated RAM', 2) # Log RAM
 
 class Memory():
     def __init__(self, size):
